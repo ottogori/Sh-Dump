@@ -1,0 +1,42 @@
+#Atualiza o SO
+sudo yum update -y
+ 
+#Instala todos os pacotes necessários
+sudo yum install -y httpd24 php70 mysql56-server php70-mysqlnd
+sudo yum install php70-mbstring.x86_64 php70-zip.x86_64 -y
+ 
+#Inicia o serviço HTTPD e o posiciona para iniciar junto ao ambiente
+sudo service httpd start
+sudo chkconfig httpd on
+chkconfig --list httpd
+ 
+#Nesse ponto você já deve ser capaz de ver a pagina default do Apache
+ 
+#Define permisões necessárias ao usuário default EC2_USER e grupo apache
+sudo usermod -a -G apache ec2-user
+sudo chown -R ec2-user:apache /var/www
+sudo chmod 2775 /var/www
+find /var/www -type d -exec sudo chmod 2775 {} \;
+find /var/www -type f -exec sudo chmod 0664 {} \;
+ 
+#Nesse momento você está apto a segurar seu web service
+rm /var/www/html/phpinfo.php
+ 
+#Inicia o serviço MySQL e inicia a instalação no modo seguro
+sudo service mysqld start
+sudo mysql_secure_installation
+ 
+#Inclui o serviço mysqld no chkconfig
+sudo chkconfig mysqld on
+ 
+#Muda o atual pwd
+cd /var/www/html
+ 
+#Baixa, extrai e instala o phpMyAdmin
+wget https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz
+tar -xvzf phpMyAdmin-latest-all-languages.tar.gz
+mv phpMyAdmin-4.7.5-all-languages phpMyAdmin
+sudo service mysqld start
+ 
+#Referencia
+#http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-LAMP.html
